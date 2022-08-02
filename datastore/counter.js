@@ -11,12 +11,13 @@ var counter = 0;
 // Wikipedia entry on Leading Zeros and check out some of code links:
 // https://www.google.com/search?q=what+is+a+zero+padded+number%3F
 
-const zeroPaddedNumber = (num) => {
+const zeroPaddedNumber = (num) => {   //turns a number into 5 digits stringified number: 13 => '00013'
   return sprintf('%05d', num);
 };
 
-const readCounter = (callback) => {
-  fs.readFile(exports.counterFile, (err, fileData) => {
+const readCounter = (callback) => { //readCounter func takes a cb as argument and runs readFile method which reads the counterFile
+  fs.readFile(exports.counterFile, (err, fileData) => {  //counterfile will later be exported into a txt file in the hard drive??
+    console.log('readCOunter callback', callback);
     if (err) {
       callback(null, 0);
     } else {
@@ -25,7 +26,14 @@ const readCounter = (callback) => {
   });
 };
 
+const cb = function(arg1, arg2) {
+  console.log('arg2', arg2);
+  return arg2;
+};
+
+
 const writeCounter = (count, callback) => {
+  console.log('wc', callback);
   var counterString = zeroPaddedNumber(count);
   fs.writeFile(exports.counterFile, counterString, (err) => {
     if (err) {
@@ -38,9 +46,20 @@ const writeCounter = (count, callback) => {
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = () => {
-  counter = counter + 1;
-  return zeroPaddedNumber(counter);
+exports.getNextUniqueId = (err, id) => {
+  // counter = counter + 1;
+  // return zeroPaddedNumber(counter);
+  // var cb = function(arg1, arg2, err) {
+  //   console.log('second arguemnt', arg2);
+  // };
+  if (err) {
+    return readCounter(cb);
+
+  } else {
+    var count = readCounter(cb) + 1;
+    return writeCounter(count, cb);
+  }
+
 };
 
 
