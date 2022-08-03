@@ -17,7 +17,6 @@ const zeroPaddedNumber = (num) => {   //turns a number into 5 digits stringified
 
 const readCounter = (callback) => { //readCounter func takes a cb as argument and runs readFile method which reads the counterFile
   fs.readFile(exports.counterFile, (err, fileData) => {  //counterfile will later be exported into a txt file in the hard drive??
-    console.log('readCOunter callback', callback);
     if (err) {
       callback(null, 0);
     } else {
@@ -26,14 +25,8 @@ const readCounter = (callback) => { //readCounter func takes a cb as argument an
   });
 };
 
-const cb = function(arg1, arg2) {
-  console.log('arg2', arg2);
-  return arg2;
-};
-
 
 const writeCounter = (count, callback) => {
-  console.log('wc', callback);
   var counterString = zeroPaddedNumber(count);
   fs.writeFile(exports.counterFile, counterString, (err) => {
     if (err) {
