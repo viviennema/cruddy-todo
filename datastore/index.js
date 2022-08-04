@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+var Promise = require('bluebird');
+
+Promise.promisifyAll(fs);
 
 var items = {};
 
@@ -22,32 +25,7 @@ exports.create = (text, callback) => {
       });
     }
   });
-  // items[id] = text;
-  // callback(null, { id, text });
-
 };
-
-exports.readAll = (callback) => {
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
-  // });
-  // callback(null, data);
-
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      throw err;
-    } else {
-      callback(null,
-        files.map((file) => {
-          var id = file.slice(0, 5);
-          var text = file.slice(0, 5);
-          return { id, text };
-        })
-      );
-    }
-  });
-};
-
 
 exports.readOne = (id, callback) => {
   var filePath = path.join(exports.dataDir, `${id}.txt`);
@@ -55,19 +33,31 @@ exports.readOne = (id, callback) => {
     if (err) {
       callback(new Error(`No item with id: ${id}`));
     } else {
+      console.log({id: id, text: fileData.toString()});
       callback(null, {id: id, text: fileData.toString()});
     }
   });
 };
 
+var readOneAsync = Promise.promisify(exports.readOne);
+
+exports.readAll = (callback) => {
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw err;
+    } else {
+      var promises = files.map((file) => {
+        var id = file.slice(0, 5);
+        return readOneAsync(id);
+      });
+      Promise.all(promises).then((array) => {
+        callback(null, array);
+      });
+    }
+  });
+};
+
 exports.update = (id, text, callback) => {
-  // var item = items[id];
-  // if (!item) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   items[id] = text;
-  //   callback(null, { id, text });
-  // }
   var filePath = path.join(exports.dataDir, `${id}.txt`);
   fs.readFile(filePath, (err, fileData) => {
     if (err) {
@@ -85,14 +75,6 @@ exports.update = (id, text, callback) => {
 };
 
 exports.delete = (id, callback) => {
-  // var item = items[id];
-  // delete items[id];
-  // if (!item) {
-  //   // report an error if item not found
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback();
-  // }
   var filePath = path.join(exports.dataDir, `${id}.txt`);
   fs.unlink(filePath, (err) => {
     if (err) {
